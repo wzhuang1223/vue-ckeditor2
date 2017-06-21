@@ -1,44 +1,50 @@
 ﻿var vueckeditor = {
     name: 'VueCkeditor',
     props: {
+        id: {
+            type: String,
+            default: function () {
+                return 'editor_' + new Date().valueOf() + '_' + Math.floor((1 + Math.random()) * 0x10000).toString(16);
+            }
+        },
         value: {
             type: String
         },
-        id: {
-            type: String,
-            default: function _default() {
-                return 'editor_' + (new Date().getTime() + Math.random());
-            }
-        },
         types: {
             type: String,
-            default: function _default() {
+            default: function () {
                 return 'classic';
             }
         },
         config: {
             type: Object,
-            default: function _default() { }
+            default: function () { }
+        },
+        readonly: {
+            type: Boolean,
+            default: function () {
+                return false;
+            }
         }
     },
     template:
-        '<textarea :id="id" :value="value" :types="types" :config="config"></textarea>',
-    data: function data() {
+        '<textarea :id="id" :value="value" :types="types" :config="config" :readonly="readonly"></textarea>',
+    data: function () {
         return {
             count: 0
         };
     },
     computed: {
-        instance: function instance() {
+        instance: function () {
             return CKEDITOR.instances[this.id];
         }
     },
-    beforeUpdate: function beforeUpdate() {
+    beforeUpdate: function () {
         if (this.value !== this.instance.getData()) {
             this.instance.setData(this.value);
         }
     },
-    mounted: function mounted() {
+    mounted: function () {
         var _this = this;
         if (typeof CKEDITOR === 'undefined') {
             var errorMessage = 'CKEDITOR is missing (http://ckeditor.com/)'
@@ -53,6 +59,8 @@
             } else {
                 CKEDITOR.replace(this.id, this.config);
             }
+            CKFinder.setupCKEditor(CKEDITOR.instances[this.id], './ckfinder/');
+
             this.instance.on('change', function () {
                 var html = _this.instance.getData();
                 if (html !== _this.value) {
@@ -61,7 +69,7 @@
             });
         }
     },
-    destroyed: function beforeDestroy() {
+    beforeDestroyed: function () {
         var id = this.id;
         if (CKEDITOR.instances[id]) {
             delete CKEDITOR.instances[id];
